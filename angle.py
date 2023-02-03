@@ -30,3 +30,11 @@ x = 7
 y = -7
 angles = angle(x,y)
 print(angles)
+x = 4
+y = 2
+angles = angle(x,y)
+print(angles)
+x = 5
+y = 9
+angles = angle(x,y)
+print(angles)
