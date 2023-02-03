@@ -1,6 +1,7 @@
 
 
 coord_dict = {"X":[], "Y":[], "G":[]}
+
 def parse_file():
     #filename = input("What file would you like to run?:  ")
     #file_object = open(filename, "r")
