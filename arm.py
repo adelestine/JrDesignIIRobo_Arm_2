@@ -1,5 +1,7 @@
+import parse
+
+
 import math
-from parse.py import parse()
 
 def run_servos_G00(n1, n2):
     print("G00")
