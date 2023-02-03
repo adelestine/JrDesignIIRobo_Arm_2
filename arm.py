@@ -1,5 +1,4 @@
 import math
-from parse import parse
 
 def run_servos_G00(n1, n2):
     print("G00")
@@ -58,7 +57,7 @@ def parse_file():
         coord_dict['X'].append(curr_line[x_loc+1:y_loc])
         coord_dict['G'].append(curr_line[:x_loc])
     print(coord_dict)
-parse()
+parse_file()
 servo = []
 servo2 = []
 for i in range(len(coord_dict['X'])):
