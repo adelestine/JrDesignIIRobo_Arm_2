@@ -2,6 +2,7 @@ import math
 
 def run_servos_G00(n1, n2):
     print("G00")
+
 def run_servos_G01(n1, n2):
     print("G01")
 def run_servos_G90(n1, n2):
@@ -56,19 +57,19 @@ def parse_file():
         coord_dict['Y'].append(curr_line[y_loc+1:])            
         coord_dict['X'].append(curr_line[x_loc+1:y_loc])
         coord_dict['G'].append(curr_line[:x_loc])
-    print(coord_dict)
+    #print(coord_dict)
 parse_file()
 servo = []
 servo2 = []
 for i in range(len(coord_dict['X'])):
-    print(int(coord_dict['X'][i]), int(coord_dict['Y'][i]))
+    #print(int(coord_dict['X'][i]), int(coord_dict['Y'][i]))
     angles = angle(int(coord_dict['X'][i]), int(coord_dict['Y'][i]))
     servo1angle = angles[0]
     servo2angle = angles[1]
     servo.append(servo1angle)
     servo2.append(servo2angle)
 
-print(servo, servo2)
+#print(servo, servo2)
 for i in range(len(servo)):
     if i != 0:
         if coord_dict['G'][i] == 'G00':
@@ -90,7 +91,25 @@ for i in range(len(servo)):
         # elif coord_dict['G'][i] == 'M72':
         #     run_servos_M72(servo1angle[i], servo2angle[i])
     else:
-        print('hello')
+        if coord_dict['G'][i] == 'G00':
+            run_servos_G00(servo[i], servo2[i])
+        elif coord_dict['G'][i] == 'G01':
+            run_servos_G01(servo[i], servo2[i])
+        elif coord_dict['G'][i] == 'G90':
+            run_servos_G90(servo[i], servo2[i])
+        elif coord_dict['G'][i] == 'G91':
+            run_servos_G91(servo[i], servo2[i])
+        elif coord_dict['G'][i] == 'G20':
+            run_servos_G20(servo[i], servo[i])
+        elif coord_dict['G'][i] == 'G21':
+            run_servos_G21(servo[i], servo2[i])
+        # elif coord_dict['G'][i] == 'M02':
+        #     run_servos_M02(servo1angle[i], servo2angle[i])
+        # elif coord_dict['G'][i] == 'M06':
+        #     run_servos_M06(servo1angle[i], servo2angle[i])
+        # elif coord_dict['G'][i] == 'M72':
+        #     run_servos_M72(servo1angle[i], servo2angle[i])
+        print(" ")
     
     
     
