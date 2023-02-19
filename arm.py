@@ -1,16 +1,23 @@
 import math
 
-
+servo = []
+servo2 = []
+#Runs motors like normal
 def run_servos_G00(n1, n2, c1, c2):
-    num1 = (c1 - n1)/1.8
-    num2 = (c2 - n2)/1.8
-    for i in range(num1):
-        print()
-    for i in range(num2):
-        print()
+    angles = angle(n1, n2, 'inches')
+    servo1angle = angles[0]
+    servo2angle = angles[1]
+    servo.append(servo1angle)
+    servo2.append(servo2angle)
+    if(servo < 0):
+        for i in range(int(servo1angle)):
+            print(i)
+        for i in range(int(servo2angle)):
+            print(i)
+    
         
-    print("G00")
 
+#Changes Speed motors travel
 def run_servos_G01(n1, n2, c1, c2):
     num1 = (c1-n1)/1.8
     num2 = (c2-n2)/1.8
@@ -20,22 +27,27 @@ def run_servos_G01(n1, n2, c1, c2):
         print()
     print("G01")
 
-def run_servos_G90(n1, n2, c1, c2):
-    print("G90")
+#Incremental Change (If im at 2,2 and we read 5,5 go to 7,7)
+#maybe rerun the angle function but the coordinates at the input of the function will just add to the previous ones
 def run_servos_G91(n1, n2, c1, c2):
     print("G91")
+
+#Values are in Inches
 def run_servos_G20(n1, n2, c1, c2):
     print("G20")
 
+#Values are in Millimeters
+#Rerun the angle function but use a convertion 
 def run_servos_G21(n1, n2, c1, c2):
     print("G21")
 
-def angle(x,y):
+def angle(x, y, scale):
     L = 5.25
+    if(scale == 'mm'):
+        L = 5.25 * 25.4     
+    
     hypotnuse = math.sqrt(pow(x,2) + pow(y,2))
     s1 = hypotnuse/2
-#print(x,y)
-#print(pow(L,2),pow(s1,2))
     s2 = math.sqrt(pow(L,2) - pow(s1,2))
 
     aB = math.atan(s2/s1)
@@ -74,32 +86,22 @@ def parse_file():
         coord_dict['G'].append(curr_line[:x_loc])
     #print(coord_dict)
 parse_file()
-servo = []
-servo2 = []
-speed = 0
+
 for i in range(len(coord_dict['X'])):
     #print(int(coord_dict['X'][i]), int(coord_dict['Y'][i]))
-    angles = angle(int(coord_dict['X'][i]), int(coord_dict['Y'][i]))
-    servo1angle = angles[0]
-    servo2angle = angles[1]
-    servo.append(servo1angle)
-    servo2.append(servo2angle)
-
-#print(servo, servo2)
-for i in range(len(servo)):
     if i != 0:
         if coord_dict['G'][i] == 'G00':
             run_servos_G00(servo[i], servo2[i], servo[i-1], servo2[i-1])
         elif coord_dict['G'][i] == 'G01':
             run_servos_G01(servo[i], servo2[i], servo[i-1], servo2[i-1])
         elif coord_dict['G'][i] == 'G90':
-            run_servos_G90(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G91':
-            run_servos_G91(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G20':
-            run_servos_G20(servo[i], servo[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G21':
-            run_servos_G21(servo[i], servo2[i], servo[i-1], servo2[i-1])
+            run_servos_G00(servo[i], servo2[i], servo[i-1], servo2[i-1])
+        #elif coord_dict['G'][i] == 'G91':
+            #run_servos_G91(servo[i], servo2[i], servo[i-1], servo2[i-1])
+        #elif coord_dict['G'][i] == 'G20':
+            #run_servos_G20(servo[i], servo[i], servo[i-1], servo2[i-1])
+        #elif coord_dict['G'][i] == 'G21':
+            #run_servos_G21(servo[i], servo2[i], servo[i-1], servo2[i-1])
         # elif coord_dict['G'][i] == 'M02':
         #     run_servos_M02(servo1angle[i], servo2angle[i])
         # elif coord_dict['G'][i] == 'M06':
@@ -108,11 +110,11 @@ for i in range(len(servo)):
         #     run_servos_M72(servo1angle[i], servo2angle[i])
     else:
         if coord_dict['G'][i] == 'G00':
-            run_servos_G00(servo[i], servo2[i], servo[i-1], servo2[i-1])
+            run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]))
         elif coord_dict['G'][i] == 'G01':
             run_servos_G01(servo[i], servo2[i], servo[i-1], servo2[i-1])
         elif coord_dict['G'][i] == 'G90':
-            run_servos_G90(servo[i], servo2[i], servo[i-1], servo2[i-1])
+            run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]))
         elif coord_dict['G'][i] == 'G91':
             run_servos_G91(servo[i], servo2[i], servo[i-1], servo2[i-1])
         elif coord_dict['G'][i] == 'G20':
