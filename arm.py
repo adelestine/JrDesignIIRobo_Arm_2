@@ -1,53 +1,43 @@
 import math
 
-servo = []
-servo2 = []
-#Runs motors like normal
-def run_servos_G00(n1, n2, c1, c2):
-    angles = angle(n1, n2, 'inches')
-    servo1angle = angles[0]
-    servo2angle = angles[1]
-    servo.append(servo1angle)
-    servo2.append(servo2angle)
-    if(servo < 0):
-        for i in range(int(servo1angle)):
-            print(i)
-    else:
-        for i in range(int(servo1angle)):
-            print(i)
-    if(servo2 < 0):
-        for i in range(int(servo1angle)):
-            print(i)
-    else:        
-        for i in range(int(servo2angle)):
-            print(i)
-    
+#Used to parse and seperate the G code file into correst peicess
+def parse_file():
+    #filename = input("What file would you like to run?:  ")
+    #file_object = open(filename, "r")
+    file_object = open("example.txt", "r")
+    i = 0
+    m72check = 0
+    for curr_line in file_object:
+        curr_line = curr_line.replace(" ","")
+        curr_line = curr_line.replace("\n","")
+        if "M2" in curr_line:
+            break
+        if "M72" in curr_line:
+            m72check = 1
+            continue
+        x_loc = curr_line.find("X")
+        y_loc = curr_line.find("Y")
+        g_loc = curr_line.find("G")
+        if "G01" in curr_line:
+            f_loc = curr_line.find("F")
+            coord_dict['Y'].append(curr_line[y_loc+1:f_loc])            
+            coord_dict['X'].append(curr_line[x_loc+1:y_loc])
+            coord_dict['G'].append(curr_line[:x_loc])
+            coord_dict['F'].append(curr_line[f_loc+1:])
+        else:
+            coord_dict['Y'].append(curr_line[y_loc+1:])            
+            coord_dict['X'].append(curr_line[x_loc+1:y_loc])
+            coord_dict['G'].append(curr_line[:x_loc])
+            coord_dict['F'].append(coord_dict['F'][i-1])
+        if m72check == 1:
+            coord_dict['F'][i] = 1000
+        i = i+1
+        
         
 
-#Changes Speed motors travel
-def run_servos_G01(n1, n2, c1, c2):
-    num1 = (c1-n1)/1.8
-    num2 = (c2-n2)/1.8
-    for i in range(num1):
-        print()
-    for i in range(num2):
-        print()
-    print("G01")
+    #print(coord_dict)
 
-#Incremental Change (If im at 2,2 and we read 5,5 go to 7,7)
-#maybe rerun the angle function but the coordinates at the input of the function will just add to the previous ones
-def run_servos_G91(n1, n2, c1, c2):
-    print("G91")
-
-#Values are in Inches
-def run_servos_G20(n1, n2, c1, c2):
-    print("G20")
-
-#Values are in Millimeters
-#Rerun the angle function but use a convertion 
-def run_servos_G21(n1, n2, c1, c2):
-    print("G21")
-
+#Uses inverse kinematics to determine the desired angle based on coordinates
 def angle(x, y, scale):
     L = 5.25
     if(scale == 'mm'):
@@ -77,65 +67,61 @@ def angle(x, y, scale):
     angles = [servo1angle, servo2angle]
     return angles
 
-coord_dict = {"X":[], "Y":[], "G":[]}
-def parse_file():
-    #filename = input("What file would you like to run?:  ")
-    #file_object = open(filename, "r")
-    file_object = open("example.txt", "r")
-    for curr_line in file_object:
-        curr_line = curr_line.replace(" ","")
-        curr_line = curr_line.replace("\n","")
-        x_loc = curr_line.find("X")
-        y_loc = curr_line.find("Y")
-        g_loc = curr_line.find("G")
-        coord_dict['Y'].append(curr_line[y_loc+1:])            
-        coord_dict['X'].append(curr_line[x_loc+1:y_loc])
-        coord_dict['G'].append(curr_line[:x_loc])
-    #print(coord_dict)
-parse_file()
-
-for i in range(len(coord_dict['X'])):
-    #print(int(coord_dict['X'][i]), int(coord_dict['Y'][i]))
-    if i != 0:
-        if coord_dict['G'][i] == 'G00':
-            run_servos_G00(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G01':
-            run_servos_G01(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G90':
-            run_servos_G00(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        #elif coord_dict['G'][i] == 'G91':
-            #run_servos_G91(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        #elif coord_dict['G'][i] == 'G20':
-            #run_servos_G20(servo[i], servo[i], servo[i-1], servo2[i-1])
-        #elif coord_dict['G'][i] == 'G21':
-            #run_servos_G21(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        # elif coord_dict['G'][i] == 'M02':
-        #     run_servos_M02(servo1angle[i], servo2angle[i])
-        # elif coord_dict['G'][i] == 'M06':
-        #     run_servos_M06(servo1angle[i], servo2angle[i])
-        # elif coord_dict['G'][i] == 'M72':
-        #     run_servos_M72(servo1angle[i], servo2angle[i])
+#Runs motors like normal, changes based on g commands
+def run_servos_G00(n1, n2, c1, c2, scale):
+    angles = angle(n1, n2, scale)
+    servo1angle = angles[0]
+    servo2angle = angles[1]
+    servo.append(servo1angle)
+    servo2.append(servo2angle)
+    #Determines how far to travel based on new desired angle and previous angle 
+    movementservo1 = servo[len(servo)-1] - servo[len(servo)-2]
+    movementservo2 = servo[len(servo2)-1] - servo[len(servo2)-2]
+    #Moves servo1 backwards IE negative angle
+    if(movementservo1 < 0):
+        for i in range(0-int(movementservo1)):
+            print(" ")
+    #Servo angle is positive
     else:
-        if coord_dict['G'][i] == 'G00':
-            run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]))
-        elif coord_dict['G'][i] == 'G01':
-            run_servos_G01(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G90':
-            run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]))
-        elif coord_dict['G'][i] == 'G91':
-            run_servos_G91(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G20':
-            run_servos_G20(servo[i], servo[i], servo[i-1], servo2[i-1])
-        elif coord_dict['G'][i] == 'G21':
-            run_servos_G21(servo[i], servo2[i], servo[i-1], servo2[i-1])
-        # elif coord_dict['G'][i] == 'M02':
-        #     run_servos_M02(servo1angle[i], servo2angle[i])
-        # elif coord_dict['G'][i] == 'M06':
-        #     run_servos_M06(servo1angle[i], servo2angle[i])
-        # elif coord_dict['G'][i] == 'M72':
-        #     run_servos_M72(servo1angle[i], servo2angle[i])
-        print(" ")
-    
+        for i in range(int(movementservo1)):
+            print(" ")
+    #Moves servo2 backwards IE negative angle
+    #print(servo2)
+    if(movementservo2 < 0):
+        for i in range(0-int(movementservo2)):
+            print(" ")
+    #Servo2 angle is positive
+    else:        
+        for i in range(int(movementservo2)):
+            print(" ")
+
+#Once the G code file is parsed, we use this to run the entire program
+def run_program():
+    for i in range(len(coord_dict['X'])):
+        #print(int(coord_dict['X'][i]), int(coord_dict['Y'][i]))
+            if coord_dict['G'][i] == 'G00':
+                run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'inches')
+            elif coord_dict['G'][i] == 'G01':
+                run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'inches')
+            elif coord_dict['G'][i] == 'G90':
+                run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'inches')
+            elif coord_dict['G'][i] == 'G91':
+                n1 = int(coord_dict['X'][i]) + int(coord_dict['X'][i-1])
+                n2 = int(coord_dict['Y'][i]) + int(coord_dict['Y'][i-1])
+                run_servos_G00(n1, n2, int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'inches')
+            elif coord_dict['G'][i] == 'G20':
+                run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'inches')
+            elif coord_dict['G'][i] == 'G21':
+                run_servos_G00(int(coord_dict['X'][i])/25.4, int(coord_dict['Y'][i])/25.4, int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'mm')
+            # elif coord_dict['G'][i] == 'M06':
+            #     run_servos_M06(servo1angle[i], servo2angle[i])
+
+servo = []
+servo2 = []
+
+coord_dict = {"X":[], "Y":[], "G":[], "F":[]}
+parse_file()
+run_program()   
     
     
 
