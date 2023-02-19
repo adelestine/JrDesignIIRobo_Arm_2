@@ -14,8 +14,9 @@ def run_servos_G00(n1, n2, c1, c2):
 def run_servos_G01(n1, n2, c1, c2):
     num1 = (c1-n1)/1.8
     num2 = (c2-n2)/1.8
-
-    for i in range():
+    for i in range(num1):
+        print()
+    for i in range(num2):
         print()
     print("G01")
 
