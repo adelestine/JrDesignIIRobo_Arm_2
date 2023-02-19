@@ -12,6 +12,13 @@ def run_servos_G00(n1, n2, c1, c2):
     if(servo < 0):
         for i in range(int(servo1angle)):
             print(i)
+    else:
+        for i in range(int(servo1angle)):
+            print(i)
+    if(servo2 < 0):
+        for i in range(int(servo1angle)):
+            print(i)
+    else:        
         for i in range(int(servo2angle)):
             print(i)
     
