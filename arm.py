@@ -1,4 +1,6 @@
 import math
+import pyfirmata
+import time
 
 #Used to parse and seperate the G code file into correst peicess
 def parse_file():
@@ -80,20 +82,20 @@ def run_servos_G00(n1, n2, c1, c2, scale):
     #Moves servo1 backwards IE negative angle
     if(movementservo1 < 0):
         for i in range(0-int(movementservo1)):
-            print(" ")
+            print("\t")
     #Servo angle is positive
     else:
         for i in range(int(movementservo1)):
-            print(" ")
+            print("\t")
     #Moves servo2 backwards IE negative angle
     #print(servo2)
     if(movementservo2 < 0):
         for i in range(0-int(movementservo2)):
-            print(" ")
+            print(" \t")
     #Servo2 angle is positive
     else:        
         for i in range(int(movementservo2)):
-            print(" ")
+            print(" \t")
 
 #Once the G code file is parsed, we use this to run the entire program
 def run_program():
