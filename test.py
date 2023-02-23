@@ -1,14 +1,18 @@
 import pyfirmata
 import time
+import streams
 from pyfirmata import Arduino, util
-board = pyfirmata.Arduino('COM6')
-
+from servo import servo
+board = pyfirmata.Arduino('COM12')
+myServo = servo.Servo(board, 9)
 dir = 1
 while True:
-        board.digital[2].write(1)
-        time.sleep(.01)
-        board.digital[2].write(0)
-        time.sleep(.01)
+        myServo.write(45)
+        time.sleep(1)
+        myServo.write(90)
+        time.sleep(1)
+        myServo.write(135)
+        time.sleep(1)
         print(0)
 
 
