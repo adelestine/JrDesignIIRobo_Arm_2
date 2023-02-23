@@ -1,14 +1,15 @@
 import pyfirmata
 import time
 from pyfirmata import Arduino, util
-board = pyfirmata.Arduino('COM5')
+board = pyfirmata.Arduino('COM6')
 
+dir = 1
 while True:
-    board.digital[13].write(1)
-    time.sleep(1)
-    board.digital[13].write(0)
-    time.sleep(4)
-
+        board.digital[2].write(1)
+        time.sleep(.01)
+        board.digital[2].write(0)
+        time.sleep(.01)
+        print(0)
 
 
 
@@ -22,4 +23,4 @@ while True:
 #     # board.digital[13].write(1)
 #     # time.sleep(1)
 #     # board.digital[13].write(0)
-#     # time.sleep(1)p
+#     # time.sleep(1)
