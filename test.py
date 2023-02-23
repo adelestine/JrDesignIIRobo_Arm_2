@@ -1,20 +1,42 @@
 import pyfirmata
 import time
-import streams
 from pyfirmata import Arduino, util
-from servo import servo
-board = pyfirmata.Arduino('COM12')
-myServo = servo.Servo(board, 9)
-dir = 1
-while True:
-        myServo.write(45)
-        time.sleep(1)
-        myServo.write(90)
-        time.sleep(1)
-        myServo.write(135)
-        time.sleep(1)
-        print(0)
+from tkinter import *
 
+board = pyfirmata.Arduino('COM14')
+
+
+def moveServo(angle):
+        board.digital[9].write(angle)
+
+def main():
+        global pin9
+        
+
+
+        iter8 = pyfirmata.util.Iterator(board)
+        iter8.start()
+
+        pin9 = board.get_pin('d:9:s')
+
+        # root = Tk()
+        # root.title("Servo Control")
+
+        # scale = Scale(root, from_=0, to=180, orient=HORIZONTAL, command=moveServo)
+        # scale.pack(anchor=CENTER)
+
+        # root.mainloop()
+        while True:
+                moveServo(90)
+                time.sleep(1)
+                moveServo(0)
+                time.sleep(1)
+                moveServo(180)
+                time.sleep(1)
+                moveServo(0)
+                time.sleep(1)
+
+main()
 
 
 # while True:
