@@ -12,11 +12,11 @@ def moveServo(angle):
 
 def changeTool(tool):
         if tool == "T1":
-                moveServo(45)
+                moveServo(42)
         elif tool == "T2":
                 moveServo(90)
         elif tool == "T3":
-                moveServo(135)
+                moveServo(137)
         else:
                 #do nothing
                 print("")
