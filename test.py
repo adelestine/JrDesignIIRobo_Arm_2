@@ -6,11 +6,9 @@ board = pyfirmata.Arduino('COM6')
 dir = 1
 while True:
         board.digital[2].write(1)
-        time.sleep(.01)
         board.digital[2].write(0)
-        time.sleep(.01)
+        time.sleep(.0001)
         print(0)
-
 
 
 # while True:

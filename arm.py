@@ -2,14 +2,17 @@ import math
 import pyfirmata
 import time
 from pyfirmata import Arduino, util
-board = pyfirmata.Arduino('COM6')
+board = pyfirmata.Arduino('COM5')
 
+def welcome():
+    file = input('What file would you like to run?:    ')
+    return file
 
 #Used to parse and seperate the G code file into correst peicess
-def parse_file():
+def parse_file(file):
     #filename = input("What file would you like to run?:  ")
     #file_object = open(filename, "r")
-    file_object = open("example.txt", "r")
+    file_object = open(file, "r")
     i = 0
     m72check = 0
     for curr_line in file_object:
@@ -20,6 +23,14 @@ def parse_file():
         if "M72" in curr_line:
             m72check = 1
             continue
+        if "M6" in curr_line:
+            coord_dict['Y'].append(coord_dict['Y'][i-1])            
+            coord_dict['X'].append(coord_dict['X'][i-1])
+            coord_dict['G'].append(curr_line)
+            coord_dict['F'].append(coord_dict['F'][i-1])
+            i = i+1
+            continue
+            
         x_loc = curr_line.find("X")
         y_loc = curr_line.find("Y")
         g_loc = curr_line.find("G")
@@ -87,12 +98,15 @@ def run_servos_G00(n1, n2, c1, c2, scale, line):
     num2steps = movementservo2/1.8
     if(movementservo1 < 0):
         for i in range(0-int(num1steps)):
+            board.digital[5].write(0)
             board.digital[2].write(1)
-            board.digital[2].write(1/(int(coord_dict['F'][line])))
+            board.digital[2].write(0)
+            #time.sleep(1/(int(coord_dict['F'][line])))
             time.sleep(0.01)
     #Servo angle is positive
     else:
         for i in range(int(num1steps)):
+            board.digital[5].write(1)
             board.digital[2].write(1)
             board.digital[2].write(0)
             #time.sleep(1/(int(coord_dict['F'][line])))
@@ -101,6 +115,7 @@ def run_servos_G00(n1, n2, c1, c2, scale, line):
     #print(servo2)
     if(num2steps < 0):
         for i in range(0-int(num2steps)):
+            board.digital[6].write(1)
             board.digital[3].write(1)
             board.digital[3].write(0)
             #time.sleep(1/(int(coord_dict['F'][line])))
@@ -108,6 +123,7 @@ def run_servos_G00(n1, n2, c1, c2, scale, line):
     #Servo2 angle is positive
     else:        
         for i in range(int(num2steps)):
+            board.digital[6].write(0)
             board.digital[3].write(1)
             board.digital[3].write(0)
             #time.sleep(1/(int(coord_dict['F'][line])))
@@ -131,18 +147,19 @@ def run_program():
                 run_servos_G00(int(coord_dict['X'][i]), int(coord_dict['Y'][i]), int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'inches', i)
             elif coord_dict['G'][i] == 'G21':
                 run_servos_G00(int(coord_dict['X'][i])/25.4, int(coord_dict['Y'][i])/25.4, int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'mm', i)
-            # elif coord_dict['G'][i] == 'M06':
-            #     run_servos_M06(servo1angle[i], servo2angle[i])
+            elif coord_dict['G'][i] == 'M6':
+                 print()
 
 servo = []
 servo2 = []
 
 coord_dict = {"X":[], "Y":[], "G":[], "F":[]}
-parse_file()
-print(coord_dict['F'])
+file = welcome()
+parse_file(file)
 time.sleep(2)
 print('go')
-run_program()   
+run_program()
+print(coord_dict)   
 print(servo)
 print(servo2)
     
