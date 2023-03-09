@@ -16,6 +16,8 @@ def parse_file():
     #file_object = open(file, "r")
     i = 0
     m72check = 0
+    coord_dict['Z'].append(0)
+    coord_dict['T'].append('T1')
     for curr_line in file_object:
         curr_line = curr_line.replace(" ","")
         curr_line = curr_line.replace("\n","")
@@ -27,36 +29,41 @@ def parse_file():
         if "M6" in curr_line:
             coord_dict['Y'].append(coord_dict['Y'][i-1])            
             coord_dict['X'].append(coord_dict['X'][i-1])
-            coord_dict['G'].append(curr_line)
+            T_loc = curr_line.find("T")
+            coord_dict['T'].append(curr_line[T_loc:])
+            coord_dict['G'].append('M6')
             coord_dict['F'].append(coord_dict['F'][i-1])
             coord_dict['Z'].append(coord_dict['Z'][i-1])
             i = i+1
             continue
-        # if "Z" in curr_line:
-        #     z_loc = curr_line.find("Z")
-        #     coord_dict['G'].append('G100')
-        #     coord_dict['Y'].append(coord_dict['Y'][i-1])            
-        #     coord_dict['X'].append(coord_dict['X'][i-1])
-        #     coord_dict['F'].append(coord_dict['F'][i-1])
-        #     coord_dict['Z'].append(curr_line[z_loc:])
-        #     i = i +1
-        #     continue
+        if "Z" in curr_line:
+            z_loc = curr_line.find("Z")
+            coord_dict['G'].append('G100')
+            coord_dict['T'].append(coord_dict['T'][i-1])
+            coord_dict['Y'].append(coord_dict['Y'][i-1])            
+            coord_dict['X'].append(coord_dict['X'][i-1])
+            coord_dict['F'].append(coord_dict['F'][i-1])
+            coord_dict['Z'].append(curr_line[z_loc:])
+            i = i + 1
+            continue
         x_loc = curr_line.find("X")
         y_loc = curr_line.find("Y")
         g_loc = curr_line.find("G")
         if "G01" in curr_line:
             f_loc = curr_line.find("F")
-            coord_dict['Y'].append(curr_line[y_loc+1:f_loc])            
+            coord_dict['Y'].append(curr_line[y_loc+1:f_loc])    
+            coord_dict['T'].append(coord_dict['T'][i-1])        
             coord_dict['X'].append(curr_line[x_loc+1:y_loc])
             coord_dict['G'].append(curr_line[:x_loc])
             coord_dict['F'].append(curr_line[f_loc+1:])
-            #coord_dict['Z'].append(coord_dict['Z'][i-1])
+            coord_dict['Z'].append(coord_dict['Z'][i-1])
         else:
             coord_dict['Y'].append(curr_line[y_loc+1:])            
             coord_dict['X'].append(curr_line[x_loc+1:y_loc])
             coord_dict['G'].append(curr_line[:x_loc])
             coord_dict['F'].append(coord_dict['F'][i-1])
-            #coord_dict['Z'].append(coord_dict['Z'][i-1])
+            coord_dict['Z'].append(coord_dict['Z'][i-1])
+            coord_dict['T'].append(coord_dict['T'][i-1])
         if m72check == 1:
             coord_dict['F'][i] = 1000
         i = i+1
@@ -92,7 +99,7 @@ def angle(x, y, scale):
 
     if ((y-y3)>0):
         servo2angle=servo2angle-180
-    angles = [servo1angle, servo2angle]
+    angles = [servo2angle, servo1angle]
     return angles
 
 #Runs motors like normal, changes based on g commands
@@ -110,37 +117,37 @@ def run_servos_G00(n1, n2, c1, c2, scale, line):
     num1steps = movementservo1/1.8
     num2steps = movementservo2/1.8
     if(movementservo1 < 0):
+        board.digital[5].write(0)
         for i in range(0-int(num1steps)):
-            board.digital[5].write(0)
             board.digital[2].write(1)
             board.digital[2].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.01)
+            time.sleep(1/(int(coord_dict['F'][line])))
+            #time.sleep(0.01)
     #Servo angle is positive
     else:
-        for i in range(int(num1steps)):
-            board.digital[5].write(1)
+        board.digital[5].write(1)
+        for i in range(int(num1steps)): 
             board.digital[2].write(1)
             board.digital[2].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.01)
+            time.sleep(1/(int(coord_dict['F'][line])))
+            #time.sleep(0.01)
     #Moves servo2 backwards IE negative angle
     #print(servo2)
     if(num2steps < 0):
+        board.digital[6].write(1)
         for i in range(10*(0-int(num2steps))):
-            board.digital[6].write(1)
             board.digital[3].write(1)
             board.digital[3].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.01)
+            time.sleep(1/(int(coord_dict['F'][line])))
+            #time.sleep(0.01)
     #Servo2 angle is positive
     else:        
+        board.digital[6].write(0)
         for i in range(10 * int(num2steps)):
-            board.digital[6].write(0)
             board.digital[3].write(1)
             board.digital[3].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.01)
+            time.sleep(1/(int(coord_dict['F'][line])))
+            #time.sleep(0.01)
 
 def lift_arm(height):
     if(height == 1):
@@ -148,13 +155,13 @@ def lift_arm(height):
         for i in range(200):
             board.digital[4].write(1)
             board.digital[4].write(0)
-            time.sleep(0.01)
+            time.sleep(0.001)
     else:
         board.digital[7].write(0)
         for i in range(200):
             board.digital[4].write(1)
             board.digital[4].write(0)
-            time.sleep(0.01)
+            time.sleep(0.001)
 
 #Once the G code file is parsed, we use this to run the entire program
 def run_program():
@@ -176,20 +183,33 @@ def run_program():
             elif coord_dict['G'][i] == 'G21':
                 run_servos_G00(int(coord_dict['X'][i])/25.4, int(coord_dict['Y'][i])/25.4, int(coord_dict['X'][i-1]), int(coord_dict['Y'][i-1]), 'mm', i)
             elif coord_dict['G'][i] == 'M6':
-                 print()
+                 change_tool(coord_dict['T'][i])
             elif coord_dict['G'][i] == 'G100':
                 lift_arm(coord_dict['Z'][i])
+
+def moveServo(angle):
+        board.digital[9].write(angle)
+
+def change_tool(tool):
+    lift_arm(1)
+    if tool == "T1":
+            moveServo(42)
+    elif tool == "T2":
+            moveServo(90)
+    elif tool == "T3":
+            moveServo(137)
+    lift_arm(0)
 
 servo = []
 servo2 = []
 
-coord_dict = {"X":[], "Y":[], "Z":[], "G":[], "F":[]}
+coord_dict = {"X":[], "Y":[], "Z":[], "G":[], "F":[], "T":[]}
 #file = welcome()
 parse_file()
 time.sleep(2)
 print('go')
 servo.append(0)
-servo2.append(90)
+servo2.append(180)
 run_program()
 print(coord_dict)   
 print(servo)
