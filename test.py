@@ -3,13 +3,24 @@ import time
 from pyfirmata import Arduino, util
 board = pyfirmata.Arduino('COM6')
 
+board.digital[7].write(0)
 dir = 1
-while True:
-        board.digital[2].write(1)
-        board.digital[2].write(0)
-        time.sleep(.0001)
-        print(0)
-
+time.sleep(2)
+print('gp')
+j = 0
+for i in range(1000000):
+        # board.digital[2].write(1)
+        # board.digital[2].write(0)
+        # time.sleep(.001)
+        
+        # board.digital[3].write(1)
+        # board.digital[3].write(0)
+        # time.sleep(.001)
+        
+        board.digital[4].write(1)
+        board.digital[4].write(0)
+        time.sleep(.001)
+        print(i)        
 
 # while True:
     

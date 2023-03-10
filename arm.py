@@ -77,7 +77,9 @@ def angle(x, y, scale):
     L = 5.25
     if(scale == 'mm'):
         L = 5.25 * 25.4     
-    
+        x = x *25.4
+        y = y *25.4
+
     hypotnuse = math.sqrt(pow(x,2) + pow(y,2))
     s1 = hypotnuse/2
     s2 = math.sqrt(pow(L,2) - pow(s1,2))
@@ -107,30 +109,32 @@ def run_servos_G00(n1, n2, c1, c2, scale, line):
     angles = angle(n1, n2, scale)
     servo1angle = angles[0]
     servo2angle = angles[1]
-    print(len(servo), len(servo2))
+    #print(servo1angle, servo2angle)
+    #print(len(servo), len(servo2))
     servo.append(servo1angle)
     servo2.append(servo2angle)
     #Determines how far to travel based on new desired angle and previous angle 
     movementservo1 = servo[len(servo)-1] - servo[len(servo)-2]
-    movementservo2 = servo[len(servo2)-1] - servo[len(servo2)-2]
+    movementservo2 = servo2[len(servo2)-1] - servo2[len(servo2)-2]
     #Moves servo1 backwards IE negative angle
     num1steps = movementservo1/1.8
     num2steps = movementservo2/1.8
+    print(num1steps, num2steps)
     if(movementservo1 < 0):
         board.digital[5].write(0)
         for i in range(0-int(num1steps)):
             board.digital[2].write(1)
             board.digital[2].write(0)
-            time.sleep(1/(int(coord_dict['F'][line])))
-            #time.sleep(0.01)
+            #time.sleep(1/(int(coord_dict['F'][line])))
+            time.sleep(0.01)
     #Servo angle is positive
     else:
         board.digital[5].write(1)
         for i in range(int(num1steps)): 
             board.digital[2].write(1)
             board.digital[2].write(0)
-            time.sleep(1/(int(coord_dict['F'][line])))
-            #time.sleep(0.01)
+            #time.sleep(1/(int(coord_dict['F'][line])))
+            time.sleep(0.01)
     #Moves servo2 backwards IE negative angle
     #print(servo2)
     if(num2steps < 0):
@@ -138,16 +142,16 @@ def run_servos_G00(n1, n2, c1, c2, scale, line):
         for i in range(10*(0-int(num2steps))):
             board.digital[3].write(1)
             board.digital[3].write(0)
-            time.sleep(1/(int(coord_dict['F'][line])))
-            #time.sleep(0.01)
+            #time.sleep(1/(int(coord_dict['F'][line])))
+            time.sleep(0.01)
     #Servo2 angle is positive
     else:        
         board.digital[6].write(0)
         for i in range(10 * int(num2steps)):
             board.digital[3].write(1)
             board.digital[3].write(0)
-            time.sleep(1/(int(coord_dict['F'][line])))
-            #time.sleep(0.01)
+            #time.sleep(1/(int(coord_dict['F'][line])))
+            time.sleep(0.01)
 
 def lift_arm(height):
     if(height == 1):
@@ -209,7 +213,7 @@ parse_file()
 time.sleep(2)
 print('go')
 servo.append(0)
-servo2.append(180)
+servo2.append(90)
 run_program()
 print(coord_dict)   
 print(servo)
