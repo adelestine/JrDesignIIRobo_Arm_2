@@ -126,38 +126,38 @@ def run_servos_G00(n1, n2, c1, c2, scale, line):
         board.digital[6].write(0)
 
     print(movementservo1, movementservo2)
-    if(num1steps < 0):
-        board.digital[5].write(1)
-        for i in range(2*(0-int(num1steps))):
+    print(num1steps, num2steps)
+    j = 0
+
+    if num1steps > num2steps:
+        for i in range(int(num1steps)):
             board.digital[2].write(1)
             board.digital[2].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.1)
-    #Servo angle is positive
+            time.sleep(.001)
+            board.digital[2].write(1)
+            board.digital[2].write(0)
+            if j < num2steps:
+                for i in range(10):
+                    board.digital[3].write(1)
+                    board.digital[3].write(0)
+                    time.sleep(.001)
+            time.sleep(.001)
+            j = j+1
     else:
-        board.digital[5].write(0)
-        for i in range(2*int(num1steps)): 
-            board.digital[2].write(1)
-            board.digital[2].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.1)
-    #Moves servo2 backwards IE negative angle
-    #print(servo2)
-    if(num2steps < 0):
-        board.digital[6].write(0)
-        for i in range(10*(0-int(num2steps))):
-            board.digital[3].write(1)
-            board.digital[3].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.01)
-    #Servo2 angle is positive
-    else:        
-        board.digital[6].write(1)
-        for i in range(10 * int(num2steps)):
-            board.digital[3].write(1)
-            board.digital[3].write(0)
-            #time.sleep(1/(int(coord_dict['F'][line])))
-            time.sleep(0.01)
+        for i in range(int(num2steps)):
+            for i in range(10):
+                    board.digital[3].write(1)
+                    board.digital[3].write(0)
+                    print('1')
+                    time.sleep(.001)
+            if j < num1steps:
+                board.digital[2].write(1)
+                board.digital[2].write(0)
+                time.sleep(.001)
+                board.digital[2].write(1)
+                board.digital[2].write(0)
+            time.sleep(.001)
+            j = j+1
 
 def lift_arm(height):
     if(height == 1):
